@@ -15,12 +15,12 @@ const getEthereumContract = () => {
         contractABI,
         signer
     );
-    // console.log(ethereum, transactionContract);
     return transactionContract;
 };
 
 export const TransactionProvider = ({ children }) => {
     const [currentAccount, setCurrentAccount] = useState("");
+    const [balance, setBalance] = useState(0);
     const [formData, setFormData] = useState({
         addressTo: "",
         amount: "",
@@ -60,12 +60,20 @@ export const TransactionProvider = ({ children }) => {
         try {
             if (!ethereum) return alert("Please install metamask");
             const accounts = await ethereum.request({ method: "eth_accounts" });
+            const balance = await ethereum.request({ method: "eth_getBalance", "params": [accounts[0], "latest"] });
             if (accounts.length) {
                 setCurrentAccount(accounts[0]);
+                setBalance((parseInt(balance) / (10 ** 18)).toFixed(4))
                 getAllTransactions();
             } else {
                 console.log("No accounts found");
             }
+            ethereum.on('accountsChanged', (accounts) => {
+                // If user has locked/logout from MetaMask, this resets the accounts array to empty
+                if (!accounts.length) {
+                    setCurrentAccount("");
+                }
+            });
         } catch (error) {
             console.log(error);
             throw new Error("No ethereum object.");
@@ -124,7 +132,6 @@ export const TransactionProvider = ({ children }) => {
                 keyword
             );
 
-            // console.log("This is transaction hash ", transactionHash);
             setIsLoading(true);
             console.log(`Loading - ${transactionHash.hash}`);
             await transactionHash.wait();
@@ -156,7 +163,9 @@ export const TransactionProvider = ({ children }) => {
                 handleChange,
                 sendTransaction,
                 transactions,
-                isLoading
+                isLoading,
+                balance,
+                setCurrentAccount
             }}
         >
             {children}

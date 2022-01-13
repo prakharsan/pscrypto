@@ -41,17 +41,15 @@ export const TransactionProvider = ({ children }) => {
         try {
             if (!ethereum) return alert("Please install metamask");
             const transactionContract = getEthereumContract();
-            // const transactionCount = await transactionContract.getTransactionCount();
             const availableTransactions = await transactionContract.getAllTransactions();
             const structuredTransactions = availableTransactions.map((transaction) => ({
                 addressTo: transaction.receiver,
                 addressFrom: transaction.sender,
-                timestamp: new Date(transaction.timestamp.toNumber()*1000).toLocaleString(),
+                timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
                 message: transaction.message,
                 keyword: transaction.keyword,
-                amount: parseInt(transaction.amount._hex)/(10**18)
+                amount: parseInt(transaction.amount._hex) / (10 ** 18)
             }))
-            console.log(structuredTransactions)
             setTransactions(structuredTransactions);
         } catch (error) {
             console.log(error);
@@ -74,7 +72,7 @@ export const TransactionProvider = ({ children }) => {
         }
     };
 
-    const checkIfTransactionsExist = async () =>{
+    const checkIfTransactionsExist = async () => {
         try {
             const transactionContract = getEthereumContract();
             const transactionCount = await transactionContract.getTransactionCount();
@@ -92,6 +90,7 @@ export const TransactionProvider = ({ children }) => {
                 method: "eth_requestAccounts",
             });
             setCurrentAccount(accounts[0]);
+            location.reload();
         } catch (error) {
             console.log(error);
             throw new Error("No ethereum object.");
